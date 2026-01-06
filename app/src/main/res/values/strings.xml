@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Tap Screen Toggle</string>
+    <string name="status_normal">SCREEN NORMAL\nTap to keep awake</string>
+    <string name="status_awake">SCREEN ON\nTap to allow sleep</string>
+</resources>

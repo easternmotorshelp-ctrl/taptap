@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Screen Toggle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            /* bg_dark_start to black gradient */
+            background: linear-gradient(180deg, #1A1A2E 0%, #000000 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        #icon-container {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 32px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            fill: #4A4E69;
+            /* icon_inactive */
+            transition: fill 0.3s ease, filter 0.3s ease;
+        }
+
+        #statusText {
+            color: #8D99AE;
+            /* text_dim */
+            font-size: 18px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        #hintText {
+            position: absolute;
+            bottom: 48px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+        }
+
+        /* Active State Classes */
+        body.active #icon-container {
+            transform: scale(1.1);
+        }
+
+        body.active svg {
+            fill: #00F0FF;
+            /* neon_blue */
+            filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.6));
+        }
+
+        body.active #statusText {
+            color: #FFFFFF;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="icon-container">
+        <!-- Material Design Power Icon -->
+        <svg viewBox="0 0 24 24">
+            <path
+                d="M13,3h-2v10h2V3z M17.83,5.17l-1.42,1.42C17.99,7.86 19,9.81 19,12c0,3.87 -3.13,7 -7,7s-7,-3.13 -7,-7c0,-2.19 1.01,-4.14 2.58,-5.42L6.17,5.17C4.23,6.82 3,9.26 3,12c0,4.97 4.03,9 9,9s9,-4.03 9,-9C21,9.26 19.77,6.82 17.83,5.17z" />
+        </svg>
+    </div>
+
+    <div id="statusText">Normal Sleep Mode</div>
+    <div id="hintText">Tap anywhere to toggle</div>
+
+    <script>
+        const statusText = document.getElementById('statusText');
+        let wakeLock = null;
+
+        const requestWakeLock = async () => {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                document.body.classList.add('active');
+                statusText.innerText = 'Screen Awake Profile';
+
+                wakeLock.addEventListener('release', () => {
+                    wakeLock = null;
+                    updateUiToNormal();
+                });
+
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+                // Fallback UI for non-supported browsers, still show "Active" logic visually
+                document.body.classList.add('active');
+                statusText.innerText = 'Screen Awake (Simulated)';
+            }
+        };
+
+        const releaseWakeLock = async () => {
+            if (wakeLock !== null) {
+                await wakeLock.release();
+                wakeLock = null;
+            }
+            updateUiToNormal();
+        };
+
+        const updateUiToNormal = () => {
+            document.body.classList.remove('active');
+            statusText.innerText = 'Normal Sleep Mode';
+        };
+
+        document.body.addEventListener('click', async () => {
+            if (!document.body.classList.contains('active')) {
+                await requestWakeLock();
+            } else {
+                await releaseWakeLock();
+            }
+        });
+    </script>
+</body>
+
+</html>
